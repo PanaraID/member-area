@@ -6,10 +6,9 @@
   import { createPdfiumDirectEngine, DEFAULT_PDFIUM_WASM_URL } from '@embedpdf/engines';
   import { DocumentManagerPluginPackage } from '@embedpdf/plugin-document-manager/svelte';
   import type { DocumentManagerPlugin } from '@embedpdf/plugin-document-manager';
-  import { ViewportPluginPackage, Viewport } from '@embedpdf/plugin-viewport/svelte';
-  import { RenderPluginPackage, RenderLayer } from '@embedpdf/plugin-render/svelte';
-  import { ScrollPluginPackage, Scroller } from '@embedpdf/plugin-scroll/svelte';
+  import { RenderPluginPackage } from '@embedpdf/plugin-render/svelte';
   import { DocumentContent } from '@embedpdf/plugin-document-manager/svelte';
+  import PdfDocViewer from './PdfDocViewer.svelte';
 
   let { pdfUrl = `${import.meta.env.BASE_URL}sample-local-pdf.pdf` }: { pdfUrl?: string } = $props();
 
@@ -20,9 +19,7 @@
 
   const plugins = [
     { package: DocumentManagerPluginPackage },
-    { package: ViewportPluginPackage },
     { package: RenderPluginPackage },
-    { package: ScrollPluginPackage },
   ];
 
   async function onInitialized(registry: PluginRegistry) {
@@ -75,22 +72,7 @@
                   ⚠️ {documentState.error ?? 'Gagal memuat dokumen PDF.'}
                 </div>
               {:else if isLoaded}
-                <Viewport documentId={activeDocumentId} class="pdf-viewport">
-                  <Scroller documentId={activeDocumentId} class="pdf-scroller">
-                    {#snippet renderPage(page)}
-                      <div
-                        class="pdf-page"
-                        style="width:{page.rotatedWidth}px;height:{page.rotatedHeight}px;position:relative;"
-                      >
-                        <RenderLayer
-                          documentId={activeDocumentId}
-                          pageIndex={page.pageIndex}
-                          style="width:100%;height:100%;display:block;"
-                        />
-                      </div>
-                    {/snippet}
-                  </Scroller>
-                </Viewport>
+                <PdfDocViewer documentId={activeDocumentId} {documentState} />
               {/if}
             {/snippet}
           </DocumentContent>
@@ -114,29 +96,6 @@
     overflow: hidden;
     display: flex;
     flex-direction: column;
-  }
-
-  :global(.pdf-viewport) {
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background: #1a1a24;
-  }
-
-  :global(.pdf-scroller) {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 24px 16px;
-    gap: 16px;
-    min-height: 100%;
-  }
-
-  .pdf-page {
-    box-shadow: 0 4px 24px rgba(0,0,0,.5);
-    border-radius: 4px;
-    overflow: hidden;
-    background: #fff;
   }
 
   .pdf-loading {
