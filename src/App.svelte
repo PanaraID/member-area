@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import PdfViewer from './PdfViewer.svelte';
 
   const videos = [
     {id:'OGFrHgFIQrc',title:'Video 1 – Playlist Member Area',desc:'Konten eksklusif dari playlist Member Area.'},
@@ -18,7 +19,6 @@
   ];
 
   let curIdx = -1;
-  let ebookOpen = false;
   let nowTitle = 'Pilih video dari playlist di bawah ↓';
   let nowDesc = 'Klik salah satu video untuk mulai menonton.';
   let playerSrc = 'about:blank';
@@ -26,7 +26,6 @@
   let toolSrc = 'about:blank';
   let toolFrameVisible = false;
   let activeTool = -1;
-  let ebookFrameSrc = 'about:blank';
 
   function playVideo(idx: number) {
     curIdx = idx;
@@ -47,18 +46,6 @@
     setTimeout(() => {
       document.querySelector('.tools-frame-box')?.scrollIntoView({behavior:'smooth',block:'start'});
     }, 50);
-  }
-
-  function toggleEbook() {
-    ebookOpen = !ebookOpen;
-    if (ebookOpen) {
-      ebookFrameSrc = 'https://www.scribd.com/embeds/428660738/content?start_page=1&view_mode=scroll';
-      setTimeout(() => {
-        document.getElementById('ebookFrameWrap')?.scrollIntoView({behavior:'smooth',block:'start'});
-      }, 120);
-    } else {
-      ebookFrameSrc = 'about:blank';
-    }
   }
 
   onMount(() => {
@@ -179,26 +166,11 @@
       </div>
     </div>
     <div class="ebook-actions">
-      <div class="ebook-meta">Format: PDF · Baca online via Scribd</div>
-      <button
-        class="btn-read"
-        style={ebookOpen ? 'background:rgba(248,113,113,.2);border:1px solid rgba(248,113,113,.4);color:var(--red);box-shadow:none;' : ''}
-        on:click={toggleEbook}
-      >
-        {ebookOpen ? '✕ Tutup Buku' : '📖 Buka & Baca'}
-      </button>
+      <div class="ebook-meta">Format: PDF · Baca langsung di halaman ini</div>
     </div>
-    {#if ebookOpen}
-      <div id="ebookFrameWrap" class="ebook-frame-wrap" style="display:block;">
-        <iframe
-          class="ebook-iframe"
-          src={ebookFrameSrc}
-          sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-          referrerpolicy="no-referrer"
-          title="Ebook Reader"
-        ></iframe>
-      </div>
-    {/if}
+    <div class="ebook-frame-wrap" style="display:block;">
+      <PdfViewer pdfUrl="{import.meta.env.BASE_URL}sample-local-pdf.pdf" />
+    </div>
   </div>
 
   <!-- TOOLS -->

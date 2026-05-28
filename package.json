@@ -22,5 +22,13 @@
     "tailwindcss": "^4.3.0",
     "typescript": "~6.0.2",
     "vite": "^8.0.12"
+  },
+  "dependencies": {
+    "@embedpdf/core": "^2.14.3",
+    "@embedpdf/engines": "^2.14.3",
+    "@embedpdf/plugin-document-manager": "^2.14.3",
+    "@embedpdf/plugin-render": "^2.14.3",
+    "@embedpdf/plugin-scroll": "^2.14.3",
+    "@embedpdf/plugin-viewport": "^2.14.3"
   }
 }
