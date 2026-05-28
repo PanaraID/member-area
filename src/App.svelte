@@ -1,89 +1,255 @@
-<script>
-  import svelteLogo from './assets/svelte.svg'
-  import viteLogo from './assets/vite.svg'
-  import heroImg from './assets/hero.png'
-  import Counter from './lib/Counter.svelte'
+<script lang="ts">
+  import { onMount } from 'svelte';
+
+  const videos = [
+    {id:'OGFrHgFIQrc',title:'Video 1 – Playlist Member Area',desc:'Konten eksklusif dari playlist Member Area.'},
+    {id:'3WBJQ7xzxmE',title:'Video 2 – Playlist Member Area',desc:'Konten eksklusif dari playlist Member Area.'},
+    {id:'mA6oAJFgn9Q',title:'Video 3 – Playlist Member Area',desc:'Konten eksklusif dari playlist Member Area.'},
+    {id:'14DjR2rqmno',title:'Video 4 – Playlist Member Area',desc:'Konten eksklusif dari playlist Member Area.'},
+    {id:'tDn1oMnC1Ow',title:'Video 5 – Playlist Member Area',desc:'Konten eksklusif dari playlist Member Area.'},
+  ];
+
+  const tools = [
+    {icon:'🔍',name:'Google',url:'https://www.google.com/webhp?igu=1'},
+    {icon:'📰',name:'Berita',url:'https://news.google.com/foryou?hl=id&gl=ID&ceid=ID:id'},
+    {icon:'📊',name:'Canva',url:'https://www.canva.com'},
+    {icon:'🎨',name:'Remove.bg',url:'https://www.remove.bg'},
+    {icon:'📝',name:'Notion',url:'https://www.notion.so'},
+  ];
+
+  let curIdx = -1;
+  let ebookOpen = false;
+  let nowTitle = 'Pilih video dari playlist di bawah ↓';
+  let nowDesc = 'Klik salah satu video untuk mulai menonton.';
+  let playerSrc = 'about:blank';
+  let toolUrl = '— Pilih tool di atas —';
+  let toolSrc = 'about:blank';
+  let toolFrameVisible = false;
+  let activeTool = -1;
+  let ebookFrameSrc = 'about:blank';
+
+  function playVideo(idx: number) {
+    curIdx = idx;
+    const v = videos[idx];
+    playerSrc = `https://www.youtube-nocookie.com/embed/${v.id}?autoplay=1&rel=0&modestbranding=1&fs=0&iv_load_policy=3&playsinline=1`;
+    nowTitle = v.title;
+    nowDesc = v.desc;
+    setTimeout(() => {
+      document.querySelector('.video-player-box')?.scrollIntoView({behavior:'smooth',block:'start'});
+    }, 50);
+  }
+
+  function selectTool(idx: number) {
+    activeTool = idx;
+    toolUrl = tools[idx].url;
+    toolSrc = tools[idx].url;
+    toolFrameVisible = true;
+    setTimeout(() => {
+      document.querySelector('.tools-frame-box')?.scrollIntoView({behavior:'smooth',block:'start'});
+    }, 50);
+  }
+
+  function toggleEbook() {
+    ebookOpen = !ebookOpen;
+    if (ebookOpen) {
+      ebookFrameSrc = 'https://www.scribd.com/embeds/428660738/content?start_page=1&view_mode=scroll';
+      setTimeout(() => {
+        document.getElementById('ebookFrameWrap')?.scrollIntoView({behavior:'smooth',block:'start'});
+      }, 120);
+    } else {
+      ebookFrameSrc = 'about:blank';
+    }
+  }
+
+  onMount(() => {
+    document.addEventListener('contextmenu', e => e.preventDefault());
+    document.addEventListener('keydown', (e: KeyboardEvent) => {
+      if (
+        e.key === 'F12' ||
+        (e.ctrlKey && ['s','u','p'].includes(e.key.toLowerCase())) ||
+        (e.ctrlKey && e.shiftKey && ['i','j','c'].includes(e.key.toLowerCase()))
+      ) e.preventDefault();
+    });
+    document.addEventListener('dragstart', e => e.preventDefault());
+
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+          obs.unobserve(e.target);
+        }
+      });
+    }, {threshold: 0.06});
+    document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+    return () => obs.disconnect();
+  });
 </script>
 
-<section id="center">
-  <div class="hero">
-    <img src={heroImg} class="base" width="170" height="179" alt="" />
-    <img src={svelteLogo} class="framework" alt="Svelte logo" />
-    <img src={viteLogo} class="vite" alt="Vite logo" />
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="nav-brand">
+    <div class="nav-dot"></div>
+    Member Area
   </div>
-  <div>
-    <h1>Get started</h1>
-    <p>Edit <code>src/App.svelte</code> and save to test <code>HMR</code></p>
-  </div>
-  <Counter />
-</section>
+  <a href="https://demo.sheetflare.net/member" class="nav-dashboard">
+    🏠 Dashboard
+  </a>
+</nav>
 
-<div class="ticks"></div>
+<!-- HERO -->
+<div class="hero wrap">
+  <div class="hero-badge">✦ Exclusive Access</div>
+  <h1>Selamat Datang<br>di Member Area</h1>
+  <p>Akses penuh ke video, ebook, dan tools eksklusif. Semua tersedia langsung di halaman ini.</p>
+</div>
 
-<section id="next-steps">
-  <div id="docs">
-    <svg class="icon" role="presentation" aria-hidden="true">
-      <use href="/icons.svg#documentation-icon"></use>
-    </svg>
-    <h2>Documentation</h2>
-    <p>Your questions, answered</p>
-    <ul>
-      <li>
-        <a href="https://vite.dev/" target="_blank" rel="noreferrer">
-          <img class="logo" src={viteLogo} alt="" />
-          Explore Vite
-        </a>
-      </li>
-      <li>
-        <a href="https://svelte.dev/" target="_blank" rel="noreferrer">
-          <img class="button-icon" src={svelteLogo} alt="" />
-          Learn more
-        </a>
-      </li>
-    </ul>
-  </div>
-  <div id="social">
-    <svg class="icon" role="presentation" aria-hidden="true">
-      <use href="/icons.svg#social-icon"></use>
-    </svg>
-    <h2>Connect with us</h2>
-    <p>Join the Vite community</p>
-    <ul>
-      <li>
-        <a href="https://github.com/vitejs/vite" target="_blank" rel="noreferrer">
-          <svg class="button-icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#github-icon"></use>
-          </svg>
-          GitHub
-        </a>
-      </li>
-      <li>
-        <a href="https://chat.vite.dev/" target="_blank" rel="noreferrer">
-          <svg class="button-icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#discord-icon"></use>
-          </svg>
-          Discord
-        </a>
-      </li>
-      <li>
-        <a href="https://x.com/vite_js" target="_blank" rel="noreferrer">
-          <svg class="button-icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#x-icon"></use>
-          </svg>
-          X.com
-        </a>
-      </li>
-      <li>
-        <a href="https://bsky.app/profile/vite.dev" target="_blank" rel="noreferrer">
-          <svg class="button-icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#bluesky-icon"></use>
-          </svg>
-          Bluesky
-        </a>
-      </li>
-    </ul>
-  </div>
-</section>
+<!-- WRAP -->
+<div class="wrap">
 
-<div class="ticks"></div>
-<section id="spacer"></section>
+  <!-- VIDEO -->
+  <div class="sec-label reveal">
+    <div class="sec-icon" style="background:rgba(124,92,252,.15);">▶️</div>
+    <div>
+      <div class="sec-title">Video Playlist</div>
+      <div class="sec-sub">Tonton langsung di sini – tidak bisa dibuka di YouTube</div>
+    </div>
+  </div>
+  <div class="sec-divider"></div>
+
+  <div class="protect-note reveal">
+    🔒 <strong>Konten Dilindungi</strong> — Video hanya dapat diputar di halaman ini. Download via IDM maupun tool lain diblokir secara teknis.
+  </div>
+
+  <div class="video-player-box reveal">
+    <div class="video-ratio">
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
+      <div class="vid-shield"
+        on:contextmenu|preventDefault
+        on:dragstart|preventDefault
+        on:mousedown|preventDefault>
+      </div>
+      <iframe id="ytPlayer" src={playerSrc} allow="autoplay; encrypted-media" referrerpolicy="no-referrer" title="Video Player"></iframe>
+    </div>
+    <div class="video-meta">
+      <div class="now-pill"><span class="blink"></span> Now Playing</div>
+      <div class="video-title">{nowTitle}</div>
+      <div class="video-desc">{nowDesc}</div>
+    </div>
+  </div>
+
+  <div class="plist-box reveal mt-8">
+    <div class="plist-head">
+      <span class="plist-head-t">🎵 Daftar Video</span>
+      <span class="count-pill">{videos.length} Video</span>
+    </div>
+    <div>
+      {#each videos as v, i}
+        <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
+        <div class="pitem" class:active={curIdx === i} on:click={() => playVideo(i)}>
+          <div class="p-num">{String(i+1).padStart(2,'0')}</div>
+          <div class="p-thumb">
+            <img src="https://img.youtube.com/vi/{v.id}/mqdefault.jpg" alt="" loading="lazy">
+            <div class="p-ov">{curIdx === i ? '⏸' : '▶'}</div>
+          </div>
+          <div class="p-info">
+            <div class="p-title">{v.title}</div>
+          </div>
+        </div>
+      {/each}
+    </div>
+  </div>
+
+  <!-- EBOOK -->
+  <div class="sec-label reveal" style="margin-top:56px;">
+    <div class="sec-icon" style="background:rgba(56,189,248,.1);">📚</div>
+    <div>
+      <div class="sec-title">E-Book Library</div>
+      <div class="sec-sub">Baca langsung di halaman ini tanpa download</div>
+    </div>
+  </div>
+  <div class="sec-divider"></div>
+
+  <div class="ebook-card reveal">
+    <div class="ebook-banner">
+      <div class="ebook-cover-big">📖</div>
+      <div class="ebook-banner-text">
+        <div class="ebook-tag">Novel / Ebook</div>
+        <div class="ebook-banner-title">Ebook Novel</div>
+      </div>
+    </div>
+    <div class="ebook-actions">
+      <div class="ebook-meta">Format: PDF · Baca online via Scribd</div>
+      <button
+        class="btn-read"
+        style={ebookOpen ? 'background:rgba(248,113,113,.2);border:1px solid rgba(248,113,113,.4);color:var(--red);box-shadow:none;' : ''}
+        on:click={toggleEbook}
+      >
+        {ebookOpen ? '✕ Tutup Buku' : '📖 Buka & Baca'}
+      </button>
+    </div>
+    {#if ebookOpen}
+      <div id="ebookFrameWrap" class="ebook-frame-wrap" style="display:block;">
+        <iframe
+          class="ebook-iframe"
+          src={ebookFrameSrc}
+          sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+          referrerpolicy="no-referrer"
+          title="Ebook Reader"
+        ></iframe>
+      </div>
+    {/if}
+  </div>
+
+  <!-- TOOLS -->
+  <div class="sec-label reveal" style="margin-top:56px;">
+    <div class="sec-icon" style="background:rgba(250,204,21,.1);">🛠️</div>
+    <div>
+      <div class="sec-title">Tools &amp; Download</div>
+      <div class="sec-sub">Akses tools pilihan – tetap di dalam halaman ini</div>
+    </div>
+  </div>
+  <div class="sec-divider"></div>
+
+  <div class="tools-tabs reveal">
+    {#each tools as t, i}
+      <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
+      <div class="tool-tab" class:active={activeTool === i} on:click={() => selectTool(i)}>
+        {t.icon} {t.name}
+      </div>
+    {/each}
+  </div>
+
+  <div class="tools-frame-box reveal">
+    <div class="tools-bar">
+      <div class="win-dots">
+        <div class="win-dot" style="background:#FF5F57;"></div>
+        <div class="win-dot" style="background:#FEBC2E;"></div>
+        <div class="win-dot" style="background:#28C840;"></div>
+      </div>
+      <div class="tools-url">{toolUrl}</div>
+    </div>
+    <div>
+      {#if !toolFrameVisible}
+        <div class="tools-empty">
+          <div class="big">🛠️</div>
+          <p>Pilih tool dari tab di atas untuk mulai</p>
+        </div>
+      {:else}
+        <iframe
+          class="tools-iframe"
+          src={toolSrc}
+          sandbox="allow-scripts allow-same-origin allow-forms"
+          referrerpolicy="no-referrer"
+          title="Tool Frame"
+        ></iframe>
+      {/if}
+    </div>
+  </div>
+
+</div><!-- /wrap -->
+
+<footer>
+  <p>© 2025 Member Area · Dibuat eksklusif untuk <span>Member</span></p>
+  <p style="margin-top:6px;">Semua konten dilindungi. Dilarang menyebarkan tanpa izin.</p>
+</footer>
