@@ -3,15 +3,12 @@
   import PdfViewer from './PdfViewer.svelte';
 
   const videos = [
-    {id:'OGFrHgFIQrc',title:'Video 1 – Playlist Member Area',desc:'Konten eksklusif dari playlist Member Area.'},
-    {id:'3WBJQ7xzxmE',title:'Video 2 – Playlist Member Area',desc:'Konten eksklusif dari playlist Member Area.'},
-    {id:'mA6oAJFgn9Q',title:'Video 3 – Playlist Member Area',desc:'Konten eksklusif dari playlist Member Area.'},
-    {id:'14DjR2rqmno',title:'Video 4 – Playlist Member Area',desc:'Konten eksklusif dari playlist Member Area.'},
-    {id:'tDn1oMnC1Ow',title:'Video 5 – Playlist Member Area',desc:'Konten eksklusif dari playlist Member Area.'},
+    {id:'T-NCfLfHLVA',title:'Video 1 – Playlist Member Area',desc:'Konten eksklusif dari playlist Member Area.'},
   ];
 
   const tools = [
     {icon:'🔍',name:'Google',url:'https://www.google.com/webhp?igu=1'},
+    {icon:'📚',name:'Panara Course',url:'https://panara.id'},
     {icon:'📰',name:'Berita',url:'https://news.google.com/foryou?hl=id&gl=ID&ceid=ID:id'},
     {icon:'📊',name:'Canva',url:'https://www.canva.com'},
     {icon:'🎨',name:'Remove.bg',url:'https://www.remove.bg'},
@@ -30,7 +27,8 @@
   function playVideo(idx: number) {
     curIdx = idx;
     const v = videos[idx];
-    playerSrc = `https://www.youtube-nocookie.com/embed/${v.id}?autoplay=1&rel=0&modestbranding=1&fs=0&iv_load_policy=3&playsinline=1`;
+    const origin = encodeURIComponent(window.location.origin);
+    playerSrc = `https://www.youtube-nocookie.com/embed/${v.id}?autoplay=1&rel=0&modestbranding=1&iv_load_policy=3&playsinline=1&origin=${origin}`;
     nowTitle = v.title;
     nowDesc = v.desc;
     setTimeout(() => {
@@ -116,7 +114,7 @@
         on:dragstart|preventDefault
         on:mousedown|preventDefault>
       </div>
-      <iframe id="ytPlayer" src={playerSrc} allow="autoplay; encrypted-media" referrerpolicy="no-referrer" title="Video Player"></iframe>
+      <iframe id="ytPlayer" src={playerSrc} allow="autoplay; encrypted-media" title="Video Player"></iframe>
     </div>
     <div class="video-meta">
       <div class="now-pill"><span class="blink"></span> Now Playing</div>
