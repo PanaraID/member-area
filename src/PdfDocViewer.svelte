@@ -57,11 +57,10 @@
 <div class="doc-wrap">
   <!-- Toolbar -->
   <div class="toolbar">
-    <button class="nav-btn" disabled={currentPageIndex <= 0} onclick={prev}>
+    <button class="nav-btn" disabled={currentPageIndex <= 0} onclick={prev} aria-label="Halaman sebelumnya">
       <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
         <path d="M10 12L6 8l4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
-      <span>Sebelumnya</span>
     </button>
 
     <div class="page-info">
@@ -91,8 +90,7 @@
       {/if}
     </div>
 
-    <button class="nav-btn" disabled={currentPageIndex >= totalPages - 1} onclick={next}>
-      <span>Berikutnya</span>
+    <button class="nav-btn" disabled={currentPageIndex >= totalPages - 1} onclick={next} aria-label="Halaman berikutnya">
       <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
         <path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
