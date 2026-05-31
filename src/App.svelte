@@ -267,7 +267,7 @@
 
       <!-- Seekbar -->
       <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
-      <div class="yt-seekbar" onclick={seekTo} role="slider" aria-label="Seekbar">
+      <div class="yt-seekbar" onclick={seekTo} role="slider" aria-label="Seekbar" tabindex="0" aria-valuenow={duration ? Math.round(currentTime/duration*100) : 0} aria-valuemin={0} aria-valuemax={100}>
         <div class="yt-seekbar-track">
           <div class="yt-seekbar-fill" style="width:{duration ? (currentTime/duration*100) : 0}%"></div>
           <div class="yt-seekbar-thumb" style="left:{duration ? (currentTime/duration*100) : 0}%"></div>
@@ -348,8 +348,8 @@
     </div>
     <div>
       {#each videos as v, i}
-        <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
-        <div class="pitem" class:active={curIdx === i} onclick={() => playVideo(i)}>
+        <!-- svelte-ignore a11y_click_events_have_key_events -->
+        <div class="pitem" class:active={curIdx === i} onclick={() => playVideo(i)} role="button" tabindex="0">
           <div class="p-num">{String(i+1).padStart(2,'0')}</div>
           <div class="p-thumb">
             <img src="https://img.youtube.com/vi/{v.id}/mqdefault.jpg" alt="" loading="lazy">
@@ -409,8 +409,8 @@
 
   <div class="tools-tabs reveal">
     {#each tools as t, i}
-      <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
-      <div class="tool-tab" class:active={activeTool === i} onclick={() => selectTool(i)}>
+      <!-- svelte-ignore a11y_click_events_have_key_events -->
+      <div class="tool-tab" class:active={activeTool === i} onclick={() => selectTool(i)} role="tab" tabindex="0">
         {t.icon} {t.name}
       </div>
     {/each}

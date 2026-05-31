@@ -29,7 +29,7 @@
     return isNaN(val) ? 0 : Math.max(0, val);
   }
 
-  const initialPage = getSavedPage(pdfUrl);
+  const initialPage = $derived(getSavedPage(pdfUrl));
 
   const plugins = [
     { package: DocumentManagerPluginPackage },

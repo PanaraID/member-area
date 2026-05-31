@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { DocumentState } from '@embedpdf/core';
+  import { untrack } from 'svelte';
   import { RenderLayer } from '@embedpdf/plugin-render/svelte';
 
   let {
@@ -9,7 +10,7 @@
     pdfKey = '',
   }: { documentId: string; documentState: DocumentState; initialPage?: number; pdfKey?: string } = $props();
 
-  let currentPageIndex = $state(initialPage);
+  let currentPageIndex = $state(untrack(() => initialPage));
 
   let saveNotice = $state(false);
   let saveTimer: ReturnType<typeof setTimeout> | null = null;
