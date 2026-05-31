@@ -35,6 +35,15 @@
   let isMuted      = $state(false);
   let isFullscreen = $state(false);
   let progressInterval: ReturnType<typeof setInterval> | null = null;
+  let availableQualities = $state<string[]>([]);
+  let currentQuality     = $state('auto');
+  let qualityOpen        = $state(false);
+
+  const qualityLabel: Record<string, string> = {
+    hd2160: '4K', hd1440: '1440p', hd1080: '1080p',
+    hd720: '720p', large: '480p', medium: '360p',
+    small: '240p', tiny: '144p', auto: 'Auto',
+  };
 
   function createPlayer(videoId: string) {
     const win = window as any;
@@ -56,6 +65,20 @@
     volume   = ytPlayer.getVolume?.()  ?? 100;
     isMuted  = ytPlayer.isMuted?.()    ?? false;
     duration = ytPlayer.getDuration?.() ?? 0;
+    refreshQualities();
+  }
+
+  function refreshQualities() {
+    const q: string[] = ytPlayer?.getAvailableQualityLevels?.() ?? [];
+    availableQualities = q.length ? q : [];
+    currentQuality = ytPlayer?.getPlaybackQuality?.() ?? 'auto';
+  }
+
+  function setQuality(q: string) {
+    if (!ytPlayer || !playerReady) return;
+    ytPlayer.setPlaybackQuality(q);
+    currentQuality = q;
+    qualityOpen = false;
   }
 
   function onPlayerStateChange(event: any) {
@@ -63,6 +86,7 @@
     isPlaying = s === 1;
     if (s === 1) {
       startProgress();
+      refreshQualities();
     } else {
       stopProgress();
       if (s === 0 && curIdx < videos.length - 1) {
@@ -321,6 +345,31 @@
 
         <!-- Right -->
         <div class="yt-ctrl-right">
+          <!-- Quality Selector -->
+          {#if availableQualities.length > 0}
+            <div class="yt-quality-wrap">
+              <!-- svelte-ignore a11y_consider_explicit_label -->
+              <button class="yt-btn yt-quality-btn" onclick={() => qualityOpen = !qualityOpen}
+                title="Kualitas Video">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87a.48.48 0 0 0 .12.61l2.03 1.58c-.05.3-.07.61-.07.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.49.49 0 0 0-.12-.61l-2.03-1.58zM12 15.6a3.6 3.6 0 1 1 0-7.2 3.6 3.6 0 0 1 0 7.2z"/></svg>
+                <span class="yt-quality-label">{qualityLabel[currentQuality] ?? currentQuality}</span>
+              </button>
+              {#if qualityOpen}
+                <!-- svelte-ignore a11y_no_static_element_interactions -->
+                <div class="yt-quality-menu" onmouseleave={() => qualityOpen = false}>
+                  {#each availableQualities as q}
+                    <!-- svelte-ignore a11y_click_events_have_key_events -->
+                    <div class="yt-quality-item" class:active={currentQuality === q}
+                      onclick={() => setQuality(q)} role="menuitem" tabindex="0">
+                      {qualityLabel[q] ?? q}
+                    </div>
+                  {/each}
+                </div>
+              {/if}
+            </div>
+          {/if}
+
+          <!-- Fullscreen -->
           <!-- svelte-ignore a11y_consider_explicit_label -->
           <button class="yt-btn" onclick={toggleFullscreen} title={isFullscreen ? 'Keluar Fullscreen' : 'Fullscreen'}>
             {#if isFullscreen}
