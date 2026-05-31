@@ -85,7 +85,6 @@
           <path d="M6 2v4h4V2" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
           <path d="M5 9h6M5 12h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
         </svg>
-        <span>Simpan Progres</span>
       </button>
       {#if saveNotice}
         <span class="save-notice">✓ Tersimpan!</span>
