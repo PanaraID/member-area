@@ -17,6 +17,20 @@
   let pdfBuffer: ArrayBuffer | null = null;
   let fetchError = $state('');
 
+  function cookieKey(url: string) {
+    return 'pdf_page_' + url.replace(/[^a-z0-9]/gi, '_');
+  }
+
+  function getSavedPage(url: string): number {
+    const key = cookieKey(url);
+    const match = document.cookie.split(';').map(c => c.trim()).find(c => c.startsWith(key + '='));
+    if (!match) return 0;
+    const val = parseInt(match.split('=')[1], 10);
+    return isNaN(val) ? 0 : Math.max(0, val);
+  }
+
+  const initialPage = getSavedPage(pdfUrl);
+
   const plugins = [
     { package: DocumentManagerPluginPackage },
     { package: RenderPluginPackage },
@@ -72,7 +86,7 @@
                   ⚠️ {documentState.error ?? 'Gagal memuat dokumen PDF.'}
                 </div>
               {:else if isLoaded}
-                <PdfDocViewer documentId={activeDocumentId} {documentState} />
+                <PdfDocViewer documentId={activeDocumentId} {documentState} {initialPage} pdfKey={pdfUrl} />
               {/if}
             {/snippet}
           </DocumentContent>

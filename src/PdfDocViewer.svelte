@@ -5,9 +5,23 @@
   let {
     documentId,
     documentState,
-  }: { documentId: string; documentState: DocumentState } = $props();
+    initialPage = 0,
+    pdfKey = '',
+  }: { documentId: string; documentState: DocumentState; initialPage?: number; pdfKey?: string } = $props();
 
-  let currentPageIndex = $state(0);
+  let currentPageIndex = $state(initialPage);
+
+  let saveNotice = $state(false);
+  let saveTimer: ReturnType<typeof setTimeout> | null = null;
+
+  function savePage() {
+    const key = 'pdf_page_' + pdfKey.replace(/[^a-z0-9]/gi, '_');
+    const expires = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toUTCString();
+    document.cookie = `${key}=${currentPageIndex};expires=${expires};path=/;SameSite=Lax`;
+    saveNotice = true;
+    if (saveTimer) clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => { saveNotice = false; }, 2200);
+  }
 
   const totalPages = $derived(documentState.document?.pageCount ?? 0);
   const currentPage = $derived(currentPageIndex + 1);
@@ -61,6 +75,20 @@
         onkeydown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
       />
       <span class="page-sep">/ {totalPages}</span>
+    </div>
+
+    <div class="save-group">
+      <button class="save-btn" onclick={savePage} title="Simpan posisi halaman ini">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+          <path d="M3 2h8l2 2v10a1 1 0 01-1 1H4a1 1 0 01-1-1V2z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+          <path d="M6 2v4h4V2" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+          <path d="M5 9h6M5 12h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <span>Simpan Progres</span>
+      </button>
+      {#if saveNotice}
+        <span class="save-notice">✓ Tersimpan!</span>
+      {/if}
     </div>
 
     <button class="nav-btn" disabled={currentPageIndex >= totalPages - 1} onclick={next}>
@@ -145,6 +173,47 @@
     color: #fff;
   }
   .nav-btn:disabled { opacity: .28; cursor: not-allowed; }
+
+  .save-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .save-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: 8px;
+    border: 1px solid rgba(56,189,248,.35);
+    background: rgba(56,189,248,.08);
+    color: rgba(255,255,255,.7);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background .15s, border-color .15s, color .15s;
+    white-space: nowrap;
+    line-height: 1;
+  }
+  .save-btn:hover {
+    background: rgba(56,189,248,.2);
+    border-color: rgba(56,189,248,.6);
+    color: #fff;
+  }
+
+  .save-notice {
+    font-size: 12px;
+    font-weight: 600;
+    color: #4ade80;
+    white-space: nowrap;
+    animation: notice-in .18s ease;
+  }
+
+  @keyframes notice-in {
+    from { opacity: 0; transform: translateX(-6px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
 
   .page-info {
     display: flex;

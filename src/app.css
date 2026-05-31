@@ -137,6 +137,9 @@ body::before{
 .btn-read:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(124,92,252,.5);}
 .ebook-frame-wrap{display:none;}
 .ebook-iframe{width:100%;height:75vh;border:none;display:block;}
+.ebook-start-wrap{display:flex;align-items:center;justify-content:center;padding:56px 24px;background:rgba(124,92,252,.04);border-top:1px solid var(--line);}
+.ebook-start-btn{display:inline-flex;align-items:center;gap:10px;padding:14px 36px;border-radius:12px;border:1px solid rgba(124,92,252,.5);background:rgba(124,92,252,.15);color:#fff;font-size:16px;font-weight:700;cursor:pointer;transition:background .18s,border-color .18s,transform .15s,box-shadow .18s;letter-spacing:.3px;}
+.ebook-start-btn:hover{background:rgba(124,92,252,.3);border-color:rgba(124,92,252,.8);transform:translateY(-2px);box-shadow:0 8px 28px rgba(124,92,252,.4);}
 
 /* TOOLS */
 .tools-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}

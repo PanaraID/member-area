@@ -15,14 +15,16 @@
     {icon:'📝',name:'Notion',url:'https://www.notion.so'},
   ];
 
-  let curIdx = -1;
-  let nowTitle = 'Pilih video dari playlist di bawah ↓';
-  let nowDesc = 'Klik salah satu video untuk mulai menonton.';
-  let playerSrc = 'about:blank';
-  let toolUrl = '— Pilih tool di atas —';
-  let toolSrc = 'about:blank';
-  let toolFrameVisible = false;
-  let activeTool = -1;
+  let ebookStarted = $state(false);
+
+  let curIdx = $state(-1);
+  let nowTitle = $state('Pilih video dari playlist di bawah ↓');
+  let nowDesc = $state('Klik salah satu video untuk mulai menonton.');
+  let playerSrc = $state('about:blank');
+  let toolUrl = $state('— Pilih tool di atas —');
+  let toolSrc = $state('about:blank');
+  let toolFrameVisible = $state(false);
+  let activeTool = $state(-1);
 
   function playVideo(idx: number) {
     curIdx = idx;
@@ -108,11 +110,11 @@
 
   <div class="video-player-box reveal">
     <div class="video-ratio">
-      <!-- svelte-ignore a11y-no-static-element-interactions -->
+      <!-- svelte-ignore a11y_no_static_element_interactions -->
       <div class="vid-shield"
-        on:contextmenu|preventDefault
-        on:dragstart|preventDefault
-        on:mousedown|preventDefault>
+        oncontextmenu={(e) => e.preventDefault()}
+        ondragstart={(e) => e.preventDefault()}
+        onmousedown={(e) => e.preventDefault()}>
       </div>
       <iframe id="ytPlayer" src={playerSrc} allow="autoplay; encrypted-media" title="Video Player"></iframe>
     </div>
@@ -130,8 +132,8 @@
     </div>
     <div>
       {#each videos as v, i}
-        <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
-        <div class="pitem" class:active={curIdx === i} on:click={() => playVideo(i)}>
+        <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
+        <div class="pitem" class:active={curIdx === i} onclick={() => playVideo(i)}>
           <div class="p-num">{String(i+1).padStart(2,'0')}</div>
           <div class="p-thumb">
             <img src="https://img.youtube.com/vi/{v.id}/mqdefault.jpg" alt="" loading="lazy">
@@ -167,7 +169,15 @@
       <div class="ebook-meta">Format: PDF · Baca langsung di halaman ini</div>
     </div>
     <div class="ebook-frame-wrap" style="display:block;">
-      <PdfViewer pdfUrl="{import.meta.env.BASE_URL}sample-local-pdf.pdf" />
+      {#if ebookStarted}
+        <PdfViewer pdfUrl="{import.meta.env.BASE_URL}sample-local-pdf.pdf" />
+      {:else}
+        <div class="ebook-start-wrap">
+          <button class="ebook-start-btn" onclick={() => ebookStarted = true}>
+            📖 Baca Ebook
+          </button>
+        </div>
+      {/if}
     </div>
   </div>
 
@@ -183,8 +193,8 @@
 
   <div class="tools-tabs reveal">
     {#each tools as t, i}
-      <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
-      <div class="tool-tab" class:active={activeTool === i} on:click={() => selectTool(i)}>
+      <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
+      <div class="tool-tab" class:active={activeTool === i} onclick={() => selectTool(i)}>
         {t.icon} {t.name}
       </div>
     {/each}
