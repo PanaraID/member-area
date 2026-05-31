@@ -7,12 +7,13 @@
   ];
 
   const tools = [
-    {icon:'🔍',name:'Google',url:'https://www.google.com/webhp?igu=1'},
-    {icon:'📚',name:'Panara Course',url:'https://panara.id'},
-    {icon:'📰',name:'Berita',url:'https://news.google.com/foryou?hl=id&gl=ID&ceid=ID:id'},
-    {icon:'📊',name:'Canva',url:'https://www.canva.com'},
-    {icon:'🎨',name:'Remove.bg',url:'https://www.remove.bg'},
-    {icon:'📝',name:'Notion',url:'https://www.notion.so'},
+    {icon:'ℹ️',name:'Roda Informasi',url:'https://rodainformasi.my.id'},
+    {icon:'🎨',name:'Sablon Jogja',url:'https://sablonjogjaid.web.id'},
+    {icon:'🌟',name:'Sang Perintis',url:'https://sangperintis.my.id'},
+    {icon:'💼',name:'Saudagar Besar',url:'https://saudagarbesar.my.id'},
+    {icon:'🏢',name:'Sewa Virtual Office',url:'https://sewavirtualoffice.web.id'},
+    {icon:'🎖️',name:'Spesialis Akmil',url:'https://spesialisakmil.web.id'},
+    {icon:'👮',name:'Spesialis Akpol',url:'https://spesialisakpol.web.id'},
   ];
 
   let ebookStarted = $state(false);
@@ -435,7 +436,7 @@
     </div>
     <div class="ebook-frame-wrap" style="display:block;">
       {#if ebookStarted}
-        <PdfViewer pdfUrl="{import.meta.env.BASE_URL}sample-local-pdf.pdf" />
+        <PdfViewer pdfUrl="https://infotrending.my.id/wp-content/kumpulan-pdf/panduan_instalasi_web_donasi.pdf" />
       {:else}
         <div class="ebook-start-wrap">
           <button class="ebook-start-btn" onclick={() => ebookStarted = true}>
