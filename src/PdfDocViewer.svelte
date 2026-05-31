@@ -87,7 +87,7 @@
         </svg>
       </button>
       {#if saveNotice}
-        <span class="save-notice">✓ Tersimpan!</span>
+        <span class="save-notice">✓</span>
       {/if}
     </div>
 
