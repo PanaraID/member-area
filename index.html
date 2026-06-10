@@ -1,14 +1,1366 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="id">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-    <title>Member Area</title>
-    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
-  </head>
-  <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.ts"></script>
-  </body>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Member Area</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Syne:wght@700;800&display=swap"
+    rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* ── CSS Variables ── */
+    :root {
+      --ink: #0A0A12;
+      --card: #16162A;
+      --ink3: #1A1A2E;
+      --line: rgba(255, 255, 255, .07);
+      --text: #E8E6FF;
+      --muted: #7872A0;
+      --accent: #7C5CFC;
+      --a2: #C084FC;
+      --a3: #38BDF8;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--ink);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse 60% 50% at 20% 10%, rgba(124, 92, 252, .18) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 40% at 80% 80%, rgba(56, 189, 248, .12) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 60% at 60% 30%, rgba(192, 132, 252, .10) 0%, transparent 70%);
+    }
+
+    /* ── Animations ── */
+    @keyframes pulse-glow {
+
+      0%,
+      100% {
+        box-shadow: 0 0 6px var(--accent);
+      }
+
+      50% {
+        box-shadow: 0 0 18px var(--accent), 0 0 30px rgba(124, 92, 252, .4);
+      }
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @keyframes notice-in {
+      from {
+        opacity: 0;
+        transform: translateX(-6px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .hero-anim {
+      animation: fadeUp .6s ease both;
+    }
+
+    .nav-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: pulse-glow 2s infinite;
+      flex-shrink: 0;
+    }
+
+    .blink {
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: pulse-glow 1.2s infinite;
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity .55s ease, transform .55s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ── Video Player ── */
+    .video-ratio {
+      position: relative;
+      width: 100%;
+      padding-top: 56.25%;
+      background: #000;
+    }
+
+    .video-ratio>* {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .video-ratio iframe {
+      border: none;
+    }
+
+    #ytPlayerContainer {
+      z-index: 1;
+    }
+
+    #ytPlayerContainer iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+    }
+
+    .vid-shield {
+      z-index: 5;
+      background: transparent;
+      cursor: default;
+    }
+
+    .yt-placeholder {
+      z-index: 2;
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: var(--ink3);
+      color: rgba(255, 255, 255, .35);
+      gap: 12px;
+      font-size: 13px;
+    }
+
+    /* ── Seekbar ── */
+    .yt-seekbar {
+      width: 100%;
+      height: 18px;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      padding: 7px 0;
+    }
+
+    .yt-seekbar-track {
+      position: relative;
+      width: 100%;
+      height: 3px;
+      background: rgba(255, 255, 255, .2);
+      border-radius: 2px;
+      transition: height .12s;
+    }
+
+    .yt-seekbar:hover .yt-seekbar-track {
+      height: 5px;
+    }
+
+    .yt-seekbar-fill {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      background: #f00;
+      border-radius: 2px;
+      transition: width .45s linear;
+    }
+
+    .yt-seekbar-thumb {
+      position: absolute;
+      top: 50%;
+      width: 13px;
+      height: 13px;
+      background: #f00;
+      border-radius: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      transition: transform .12s;
+      pointer-events: none;
+    }
+
+    .yt-seekbar:hover .yt-seekbar-thumb {
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    /* ── Volume Slider ── */
+    .yt-vol-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 68px;
+      height: 3px;
+      border-radius: 2px;
+      background: rgba(255, 255, 255, .3);
+      outline: none;
+      cursor: pointer;
+      accent-color: #fff;
+      margin: 0 4px;
+    }
+
+    .yt-vol-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #fff;
+      cursor: pointer;
+    }
+
+    /* ── Quality Menu ── */
+    .yt-quality-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .yt-quality-menu {
+      position: absolute;
+      bottom: calc(100% + 6px);
+      right: 0;
+      background: #1a1a1a;
+      border: 1px solid rgba(255, 255, 255, .12);
+      border-radius: 6px;
+      padding: 4px 0;
+      min-width: 80px;
+      z-index: 100;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, .6);
+    }
+
+    .yt-quality-item {
+      padding: 7px 14px;
+      color: rgba(255, 255, 255, .75);
+      font-size: 12px;
+      cursor: pointer;
+      white-space: nowrap;
+      text-align: center;
+      transition: background .1s, color .1s;
+    }
+
+    .yt-quality-item:hover {
+      background: rgba(255, 255, 255, .1);
+      color: #fff;
+    }
+
+    .yt-quality-item.active {
+      color: #f00;
+      font-weight: 700;
+    }
+
+    /* ── Fullscreen ── */
+    .video-player-box:fullscreen {
+      display: flex;
+      flex-direction: column;
+      background: #000;
+      border-radius: 0;
+    }
+
+    .video-player-box:fullscreen .video-ratio {
+      flex: 1;
+      padding-top: 0;
+    }
+
+    .video-player-box:fullscreen .vmeta {
+      display: none !important;
+    }
+
+    .video-player-box:-webkit-full-screen {
+      display: flex;
+      flex-direction: column;
+      background: #000;
+    }
+
+    .video-player-box:-webkit-full-screen .video-ratio {
+      flex: 1;
+      padding-top: 0;
+    }
+
+    /* ── Playlist Thumb ── */
+    .p-thumb {
+      width: 72px;
+      height: 42px;
+      border-radius: 8px;
+      flex-shrink: 0;
+      overflow: hidden;
+      position: relative;
+      background: var(--ink3);
+    }
+
+    .p-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .p-ov {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, .5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      opacity: 0;
+      transition: opacity .15s;
+    }
+
+    .pitem:hover .p-ov,
+    .pitem.active .p-ov {
+      opacity: 1;
+    }
+
+    .p-title-text {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* ── PDF Viewer ── */
+    .pdf-viewer-wrap {
+      width: 100%;
+      height: 680px;
+      background: #0d0d12;
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .doc-wrap {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      height: 100%;
+      background: #11111a;
+    }
+
+    .pdf-toolbar {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      background: rgba(255, 255, 255, .035);
+      border-bottom: 1px solid rgba(255, 255, 255, .07);
+      user-select: none;
+    }
+
+    .pdf-page-area {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: auto;
+      padding: 20px;
+      background: #13131c;
+      position: relative;
+    }
+
+    .pdf-canvas {
+      box-shadow: 0 8px 40px rgba(0, 0, 0, .7), 0 0 0 1px rgba(255, 255, 255, .05);
+      border-radius: 3px;
+      display: block;
+    }
+
+    .pdf-footer-bar {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 16px;
+      background: rgba(255, 255, 255, .025);
+      border-top: 1px solid rgba(255, 255, 255, .06);
+    }
+
+    .pdf-prog-track {
+      flex: 1;
+      height: 3px;
+      background: rgba(255, 255, 255, .08);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .pdf-prog-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #7c5cfc, #38bdf8);
+      border-radius: 99px;
+      transition: width .25s ease;
+    }
+
+    .pdf-page-input {
+      width: 42px;
+      text-align: center;
+      background: rgba(255, 255, 255, .07);
+      border: 1px solid rgba(255, 255, 255, .12);
+      border-radius: 6px;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 5px 4px;
+      outline: none;
+      transition: border-color .15s, background .15s;
+    }
+
+    .pdf-page-input:focus {
+      border-color: rgba(124, 92, 252, .6);
+      background: rgba(124, 92, 252, .1);
+    }
+
+    .pdf-spinner {
+      width: 36px;
+      height: 36px;
+      border: 3px solid rgba(124, 92, 252, .2);
+      border-top-color: #7c5cfc;
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+    }
+
+    .save-notice {
+      font-size: 12px;
+      font-weight: 600;
+      color: #4ade80;
+      white-space: nowrap;
+      animation: notice-in .18s ease;
+    }
+
+    /* ── Ebook Banner ── */
+    .ebook-banner::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Ccircle cx='15' cy='15' r='2'/%3E%3Ccircle cx='45' cy='45' r='2'/%3E%3C/g%3E%3C/svg%3E");
+    }
+
+    /* ── Tools iframe ── */
+    .tools-iframe {
+      width: 100%;
+      height: 72vh;
+      border: none;
+      display: block;
+      background: #fff;
+    }
+
+    /* ── Ctrl Buttons ── */
+    .yt-ctrl-btn {
+      background: none;
+      border: none;
+      color: #fff;
+      line-height: 1;
+      cursor: pointer;
+      padding: 7px 8px;
+      border-radius: 4px;
+      transition: background .12s, opacity .12s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: .85;
+      flex-shrink: 0;
+    }
+
+    .yt-ctrl-btn:hover:not(:disabled) {
+      background: rgba(255, 255, 255, .13);
+      opacity: 1;
+    }
+
+    .yt-ctrl-btn:disabled {
+      opacity: .22;
+      cursor: not-allowed;
+    }
+
+    .pdf-nav-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      border-radius: 8px;
+      border: 1px solid rgba(124, 92, 252, .35);
+      background: rgba(124, 92, 252, .1);
+      color: rgba(255, 255, 255, .75);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background .15s, border-color .15s, color .15s, opacity .15s;
+      white-space: nowrap;
+      line-height: 1;
+    }
+
+    .pdf-nav-btn:hover:not(:disabled) {
+      background: rgba(124, 92, 252, .26);
+      border-color: rgba(124, 92, 252, .6);
+      color: #fff;
+    }
+
+    .pdf-nav-btn:disabled {
+      opacity: .28;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ═══════════════════ NAVBAR ═══════════════════ -->
+  <nav class="sticky top-0 z-[999] flex items-center justify-between px-5 h-[60px]"
+    style="background:rgba(10,10,18,.88);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid rgba(255,255,255,.07);">
+    <div class="flex items-center gap-2.5"
+      style="font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:#E8E6FF;letter-spacing:-.3px;">
+      <div class="nav-dot"></div>
+      <span id="nav-site-name"></span>
+    </div>
+    <a id="nav-dashboard-link" href="#"
+      class="flex items-center gap-2 px-[18px] py-2 rounded-[30px] text-white text-[13px] font-semibold tracking-[.3px] transition-all hover:-translate-y-0.5"
+      style="background:linear-gradient(135deg,#7C5CFC,#C084FC);box-shadow:0 4px 18px rgba(124,92,252,.35);">
+      🏠 Dashboard
+    </a>
+  </nav>
+
+  <!-- ═══════════════════ HERO ═══════════════════ -->
+  <div class="hero-anim relative z-10 px-5 pt-10 pb-5 text-center max-w-[860px] mx-auto">
+    <div
+      class="inline-flex items-center gap-2 px-3.5 py-[5px] rounded-[30px] text-[11px] font-semibold tracking-[2px] uppercase mb-4"
+      style="background:rgba(124,92,252,.15);border:1px solid rgba(124,92,252,.3);color:#C084FC;">
+      ✦ Exclusive Access
+    </div>
+    <h1
+      style="font-family:'Syne',sans-serif;font-size:clamp(26px,6vw,48px);font-weight:800;line-height:1.1;background:linear-gradient(135deg,#fff 30%,#C084FC,#38BDF8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:12px;">
+      Selamat Datang<br>di Member Area
+    </h1>
+    <p class="text-sm max-w-[420px] mx-auto" style="color:#7872A0;">
+      Akses penuh ke video, ebook, dan tools eksklusif. Semua tersedia langsung di halaman ini.
+    </p>
+  </div>
+
+  <!-- ═══════════════════ MAIN WRAP ═══════════════════ -->
+  <div class="max-w-[860px] mx-auto px-4 relative z-10 pb-16">
+
+    <!-- ─── Bagian VIDEO ─── -->
+    <div class="reveal flex items-center gap-3 mt-10 mb-4">
+      <div class="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
+        style="background:rgba(124,92,252,.15);">▶️</div>
+      <div>
+        <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:#E8E6FF;">Video Playlist</div>
+        <div class="text-xs mt-0.5" style="color:#7872A0;">Tonton langsung di sini – tidak bisa dibuka di YouTube</div>
+      </div>
+    </div>
+    <div class="h-px mb-[18px]" style="background:rgba(255,255,255,.07);"></div>
+
+    <div class="reveal flex items-start gap-2.5 rounded-xl px-4 py-2.5 text-xs mb-[18px] leading-relaxed"
+      style="background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);color:#FCA5A5;">
+      🔒 <strong>Konten Dilindungi</strong> — Video hanya dapat diputar di halaman ini. Download via IDM maupun tool
+      lain diblokir secara teknis.
+    </div>
+
+    <!-- Video Player Box -->
+    <div class="video-player-box reveal rounded-[20px] overflow-hidden mb-2"
+      style="background:#16162A;border:1px solid rgba(255,255,255,.07);box-shadow:0 20px 60px rgba(0,0,0,.5);">
+      <div class="video-ratio">
+        <div class="vid-shield" oncontextmenu="return false" ondragstart="return false" onmousedown="return false">
+        </div>
+        <div id="ytPlayerContainer"></div>
+        <div id="yt-placeholder" class="yt-placeholder">
+          <div style="font-size:54px;opacity:.2;line-height:1;">▶</div>
+          <p>Pilih video dari playlist di bawah</p>
+        </div>
+      </div>
+
+      <!-- Custom Controls -->
+      <div id="yt-controls" class="select-none px-1.5 pb-2" style="background:#0f0f0f;">
+        <!-- Seekbar -->
+        <div class="yt-seekbar" id="yt-seekbar">
+          <div class="yt-seekbar-track">
+            <div class="yt-seekbar-fill" id="yt-seek-fill" style="width:0%"></div>
+            <div class="yt-seekbar-thumb" id="yt-seek-thumb" style="left:0%"></div>
+          </div>
+        </div>
+        <!-- Buttons Row -->
+        <div class="flex items-center justify-between px-0.5 pt-0.5 gap-1">
+          <!-- Left -->
+          <div class="flex items-center">
+            <button id="btn-prev" class="yt-ctrl-btn" title="Video Sebelumnya" disabled>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M6 6h2v12H6zm3.5 6 8.5 6V6z" />
+              </svg>
+            </button>
+            <button id="btn-play" class="yt-ctrl-btn" style="padding:7px 10px;" title="Play">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M8 5v14l11-7z" />
+              </svg>
+            </button>
+            <button id="btn-stop" class="yt-ctrl-btn" title="Stop">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M6 6h12v12H6z" />
+              </svg>
+            </button>
+            <button id="btn-next" class="yt-ctrl-btn" title="Video Berikutnya" disabled>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M6 18l8.5-6L6 6v12zm2.5-6L12 9.5V14zM16 6h2v12h-2z" />
+              </svg>
+            </button>
+            <!-- Volume -->
+            <div class="flex items-center">
+              <button id="btn-mute" class="yt-ctrl-btn" title="Mute">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                  <path
+                    d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 7.97v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+                </svg>
+              </button>
+              <input type="range" id="vol-slider" class="yt-vol-slider" min="0" max="100" value="100" title="Volume">
+            </div>
+            <!-- Time -->
+            <div id="yt-time" class="font-mono text-xs px-2 whitespace-nowrap" style="color:rgba(255,255,255,.8);">0:00
+              / 0:00</div>
+          </div>
+          <!-- Right -->
+          <div class="flex items-center">
+            <div class="yt-quality-wrap" id="quality-wrap" style="display:none;">
+              <button id="btn-quality" class="yt-ctrl-btn flex items-center gap-1" title="Kualitas Video">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <path
+                    d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87a.48.48 0 0 0 .12.61l2.03 1.58c-.05.3-.07.61-.07.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.49.49 0 0 0-.12-.61l-2.03-1.58zM12 15.6a3.6 3.6 0 1 1 0-7.2 3.6 3.6 0 0 1 0 7.2z" />
+                </svg>
+                <span id="quality-label" class="text-[11px] font-semibold tracking-[.3px]">Auto</span>
+              </button>
+              <div id="quality-menu" class="yt-quality-menu" style="display:none;"></div>
+            </div>
+            <button id="btn-fullscreen" class="yt-ctrl-btn" title="Fullscreen">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Video Meta -->
+      <div class="vmeta px-[18px] pt-3.5 pb-4" style="border-top:1px solid rgba(255,255,255,.07);">
+        <div
+          class="inline-flex items-center gap-1.5 px-2.5 py-[3px] rounded-[20px] text-[10px] font-semibold tracking-[1.5px] uppercase mb-2"
+          style="background:rgba(124,92,252,.2);border:1px solid rgba(124,92,252,.3);color:#C084FC;">
+          <span class="blink"></span> Now Playing
+        </div>
+        <div id="now-title"
+          style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:#E8E6FF;line-height:1.3;margin-bottom:4px;">
+          Pilih video dari playlist di bawah ↓</div>
+        <div id="now-desc" class="text-xs leading-relaxed" style="color:#7872A0;">Klik salah satu video untuk mulai
+          menonton.</div>
+      </div>
+    </div>
+
+    <!-- Playlist -->
+    <div class="reveal mt-2 rounded-[20px] overflow-hidden"
+      style="background:#16162A;border:1px solid rgba(255,255,255,.07);">
+      <div class="flex items-center justify-between px-[18px] py-3"
+        style="border-bottom:1px solid rgba(255,255,255,.07);">
+        <span class="text-[13px] font-semibold" style="color:#E8E6FF;">🎵 Daftar Video</span>
+        <span id="playlist-count" class="text-[11px] font-semibold px-2.5 py-0.5 rounded-[20px]"
+          style="background:rgba(124,92,252,.2);color:#C084FC;"></span>
+      </div>
+      <div id="playlist-container"></div>
+    </div>
+
+    <!-- ─── Bagian EBOOK ─── -->
+    <div class="reveal flex items-center gap-3 mt-14 mb-4">
+      <div class="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
+        style="background:rgba(56,189,248,.1);">📚</div>
+      <div>
+        <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:#E8E6FF;">E-Book Library</div>
+        <div class="text-xs mt-0.5" style="color:#7872A0;">Baca langsung di halaman ini tanpa download</div>
+      </div>
+    </div>
+    <div class="h-px mb-[18px]" style="background:rgba(255,255,255,.07);"></div>
+
+    <!-- Ebook Tabs (muncul jika lebih dari 1 ebook) -->
+    <div id="ebook-tabs" class="flex gap-2 flex-wrap mb-4" style="display:none;"></div>
+
+    <!-- Ebook Card -->
+    <div class="reveal rounded-[20px] overflow-hidden"
+      style="background:#16162A;border:1px solid rgba(255,255,255,.07);box-shadow:0 20px 60px rgba(0,0,0,.5);">
+      <div class="ebook-banner relative flex items-center justify-center gap-4 px-6 h-[100px]"
+        style="background:linear-gradient(135deg,#1a0533,#0f2744,#0a2a1f);">
+        <div id="ebook-icon" class="text-5xl z-10" style="filter:drop-shadow(0 4px 16px rgba(0,0,0,.6));"></div>
+        <div class="z-10">
+          <div id="ebook-tag" class="text-[9px] tracking-[2.5px] uppercase mb-1" style="color:#38BDF8;"></div>
+          <div id="ebook-title"
+            style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:#fff;line-height:1.2;"></div>
+        </div>
+      </div>
+      <div class="px-[18px] py-3.5" style="border-bottom:1px solid rgba(255,255,255,.07);">
+        <div class="text-xs" style="color:#7872A0;">Format: PDF · Baca langsung di halaman ini</div>
+      </div>
+
+      <!-- Start screen -->
+      <div id="ebook-start-wrap" class="flex items-center justify-center py-14 px-6"
+        style="background:rgba(124,92,252,.04);border-top:1px solid rgba(255,255,255,.07);">
+        <button id="btn-read-ebook"
+          class="inline-flex items-center gap-2.5 px-9 py-3.5 rounded-xl text-white text-base font-bold tracking-[.3px] transition-all hover:-translate-y-0.5 hover:shadow-[0_8px_28px_rgba(124,92,252,.4)]"
+          style="border:1px solid rgba(124,92,252,.5);background:rgba(124,92,252,.15);">
+          📖 Baca Ebook
+        </button>
+      </div>
+
+      <!-- PDF Viewer (hidden until started) -->
+      <div id="pdf-viewer-container" style="display:none;">
+        <div class="pdf-viewer-wrap">
+          <div class="doc-wrap">
+            <!-- Toolbar -->
+            <div class="pdf-toolbar">
+              <button id="pdf-prev" class="pdf-nav-btn" aria-label="Halaman sebelumnya" disabled>
+                <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+                  <path d="M10 12L6 8l4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round" />
+                </svg>
+              </button>
+              <div class="flex items-center gap-1.5 text-[13px]">
+                <input id="pdf-page-input" class="pdf-page-input" type="text" inputmode="numeric" value="1">
+                <span style="color:rgba(255,255,255,.4);font-weight:500;">/ <span id="pdf-total">0</span></span>
+              </div>
+              <div class="flex items-center gap-2">
+                <button id="pdf-save" class="pdf-nav-btn" title="Simpan posisi halaman ini">
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                    <path d="M3 2h8l2 2v10a1 1 0 01-1 1H4a1 1 0 01-1-1V2z" stroke="currentColor" stroke-width="1.5"
+                      stroke-linejoin="round" />
+                    <path d="M6 2v4h4V2" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" />
+                    <path d="M5 9h6M5 12h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                  </svg>
+                </button>
+                <span id="pdf-save-notice" class="save-notice" style="display:none;">✓</span>
+              </div>
+              <button id="pdf-next" class="pdf-nav-btn" aria-label="Halaman berikutnya" disabled>
+                <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+                  <path d="M6 4l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round" />
+                </svg>
+              </button>
+            </div>
+            <!-- Canvas Area -->
+            <div class="pdf-page-area" id="pdf-page-area">
+              <div id="pdf-loading" class="flex flex-col items-center gap-3.5"
+                style="color:rgba(255,255,255,.5);font-size:14px;">
+                <div class="pdf-spinner"></div>
+                <span>Memuat PDF…</span>
+              </div>
+              <div id="pdf-error"
+                style="display:none;color:rgba(248,113,113,.8);font-size:14px;padding:24px;text-align:center;"></div>
+              <canvas id="pdf-canvas" class="pdf-canvas" style="display:none;"></canvas>
+            </div>
+            <!-- Footer -->
+            <div class="pdf-footer-bar">
+              <div class="pdf-prog-track">
+                <div id="pdf-prog-fill" class="pdf-prog-fill" style="width:0%"></div>
+              </div>
+              <span id="pdf-footer-label" class="text-[11px] whitespace-nowrap flex-shrink-0"
+                style="color:rgba(255,255,255,.35);">Halaman 1 dari 0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── Bagian TOOLS ─── -->
+    <div class="reveal flex items-center gap-3 mt-14 mb-4">
+      <div class="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
+        style="background:rgba(250,204,21,.1);">🛠️</div>
+      <div>
+        <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:#E8E6FF;">Tools &amp; Download
+        </div>
+        <div class="text-xs mt-0.5" style="color:#7872A0;">Akses tools pilihan – tetap di dalam halaman ini</div>
+      </div>
+    </div>
+    <div class="h-px mb-[18px]" style="background:rgba(255,255,255,.07);"></div>
+
+    <div id="tools-tabs" class="reveal flex gap-2 flex-wrap mb-3.5"></div>
+
+    <div id="tools-frame-box" class="reveal rounded-[20px] overflow-hidden"
+      style="background:#16162A;border:1px solid rgba(255,255,255,.07);box-shadow:0 20px 60px rgba(0,0,0,.5);">
+      <!-- Browser chrome bar -->
+      <div class="flex items-center gap-2.5 px-4 py-2.5"
+        style="background:#1A1A2E;border-bottom:1px solid rgba(255,255,255,.07);">
+        <div class="flex gap-1.5 items-center">
+          <div class="w-2.5 h-2.5 rounded-full bg-[#FF5F57]"></div>
+          <div class="w-2.5 h-2.5 rounded-full bg-[#FEBC2E]"></div>
+          <div class="w-2.5 h-2.5 rounded-full bg-[#28C840]"></div>
+        </div>
+        <div id="tools-url-bar"
+          class="flex-1 rounded-lg px-3 py-[5px] text-xs overflow-hidden text-ellipsis whitespace-nowrap"
+          style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07);color:#7872A0;">— Pilih tool di
+          atas —</div>
+      </div>
+      <!-- Content Area -->
+      <div>
+        <div id="tools-empty" class="flex flex-col items-center justify-center gap-3.5 text-sm"
+          style="height:280px;color:#7872A0;">
+          <div style="font-size:48px;opacity:.3;">🛠️</div>
+          <p>Pilih tool dari tab di atas untuk mulai</p>
+        </div>
+        <iframe id="tools-iframe" class="tools-iframe" src="about:blank"
+          sandbox="allow-scripts allow-same-origin allow-forms" referrerpolicy="no-referrer" title="Tool Frame"
+          style="display:none;"></iframe>
+      </div>
+    </div>
+
+  </div><!-- /wrap -->
+
+  <!-- ═══════════════════ FOOTER ═══════════════════ -->
+  <footer class="relative z-10 text-center px-5 pt-10 pb-8 text-xs mt-4"
+    style="color:#7872A0;border-top:1px solid rgba(255,255,255,.07);">
+    <p id="footer-text"></p>
+    <p class="mt-1.5">Semua konten dilindungi. Dilarang menyebarkan tanpa izin.</p>
+  </footer>
+
+  <script>
+    // ══════════════════════════════════════════════════════════════════════════════
+    //  KONFIGURASI — Edit bagian ini untuk menyesuaikan konten
+    // ══════════════════════════════════════════════════════════════════════════════
+    const CONFIG = {
+      siteName: 'Member Area',
+      dashboardUrl: 'https://demo.sheetflare.net/member',
+      footerText: '© 2025 Member Area · Dibuat eksklusif untuk <span style="color:#7C5CFC;">Member</span>',
+
+      // ── KONFIGURASI Video YouTube ──────────────────────────────────────────────────────────
+      // Tambah video baru: { id: 'ID_YOUTUBE', title: 'Judul', desc: 'Deskripsi' }
+      videos: [
+        {
+          id: 'T-NCfLfHLVA',
+          title: 'Video 1 – Playlist Member Area',
+          desc: 'Konten eksklusif dari playlist Member Area.',
+        },
+        {
+          id: 'qAH8KcfeEYI',
+          title: 'Video 2 – Panduan Lengkap',
+          desc: 'Pelajari cara memaksimalkan akses Anda dengan panduan lengkap ini.',
+        }
+        // { id: 'VIDEO_ID_2', title: 'Video 2', desc: 'Deskripsi video 2.' },
+      ],
+
+      // ── KONFIGURASI E-Book PDF ─────────────────────────────────────────────────────────────
+      // Tambah ebook baru: { title: 'Judul', tag: 'Kategori / PDF', icon: '📖', url: 'https://...pdf' }
+      ebooks: [
+        {
+          title: 'Ebook Novel',
+          tag: 'Novel / PDF',
+          icon: '📖',
+          url: 'https://infotrending.my.id/wp-content/kumpulan-pdf/panduan_instalasi_web_donasi.pdf',
+        },
+        {
+          title: 'Ebook Bisnis',
+          tag: 'Bisnis / PDF',
+          icon: '💼',
+          url: 'https://pdfobject.com/pdf/sample.pdf',
+        }
+        // { title: 'Panduan Bisnis', tag: 'Bisnis / PDF', icon: '💼', url: 'https://...pdf' },
+      ],
+
+      // ── KONFIGURASI Tools / Website ────────────────────────────────────────────────────────
+      // Tambah tool baru: { icon: '🔗', name: 'Nama Tool', url: 'https://...' }
+      tools: [
+        { icon: 'ℹ️', name: 'Roda Informasi', url: 'https://rodainformasi.my.id' },
+        { icon: '🎨', name: 'Sablon Jogja', url: 'https://sablonjogjaid.web.id' },
+        { icon: '🌟', name: 'Sang Perintis', url: 'https://sangperintis.my.id' },
+        { icon: '💼', name: 'Saudagar Besar', url: 'https://saudagarbesar.my.id' },
+        { icon: '🏢', name: 'Sewa Virtual Office', url: 'https://sewavirtualoffice.web.id' },
+        { icon: '🎖️', name: 'Spesialis Akmil', url: 'https://spesialisakmil.web.id' },
+        { icon: '👮', name: 'Spesialis Akpol', url: 'https://spesialisakpol.web.id' },
+        // { icon: '📺', name: 'Link YouTube',        url: 'https://youtube.com/...' },
+        // { icon: '📄', name: 'Link PDF Lain',       url: 'https://drive.google.com/...' },
+      ],
+    };
+    // ══════════════════════════════════════════════════════════════════════════════
+    //  END KONFIGURASI
+    // ══════════════════════════════════════════════════════════════════════════════
+
+    const $ = id => document.getElementById(id);
+
+    // ─── YouTube Player ───────────────────────────────────────────────────────────
+    const QUALITY_LABEL = {
+      hd2160: '4K', hd1440: '1440p', hd1080: '1080p', hd720: '720p',
+      large: '480p', medium: '360p', small: '240p', tiny: '144p', auto: 'Auto',
+    };
+
+    let ytPlayer = null, playerReady = false, curIdx = -1;
+    let isPlaying = false, currentTime = 0, duration = 0;
+    let volume = 100, isMuted = false, isFullscreen = false;
+    let progressInterval = null, availableQualities = [], currentQuality = 'auto', qualityOpen = false;
+
+    function fmt(s) {
+      if (!s || isNaN(s)) return '0:00';
+      return `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+    }
+
+    function updateSeekbar() {
+      const pct = duration > 0 ? (currentTime / duration * 100) : 0;
+      $('yt-seek-fill').style.width = pct + '%';
+      $('yt-seek-thumb').style.left = pct + '%';
+      $('yt-time').textContent = `${fmt(currentTime)} / ${fmt(duration)}`;
+    }
+
+    function createPlayer(videoId) {
+      if (!window.YT?.Player) return;
+      ytPlayer = new window.YT.Player('ytPlayerContainer', {
+        host: 'https://www.youtube-nocookie.com',
+        videoId,
+        playerVars: { autoplay: 1, rel: 0, modestbranding: 1, iv_load_policy: 3, playsinline: 1, controls: 0, disablekb: 1, fs: 0 },
+        events: { onReady: onPlayerReady, onStateChange: onPlayerStateChange },
+      });
+    }
+
+    function onPlayerReady() {
+      playerReady = true;
+      volume = ytPlayer.getVolume?.() ?? 100;
+      isMuted = ytPlayer.isMuted?.() ?? false;
+      duration = ytPlayer.getDuration?.() ?? 0;
+      $('vol-slider').value = isMuted ? 0 : volume;
+      updateMuteBtn();
+      refreshQualities();
+      updateSeekbar();
+    }
+
+    function refreshQualities() {
+      const q = ytPlayer?.getAvailableQualityLevels?.() ?? [];
+      availableQualities = q.length ? q : [];
+      currentQuality = ytPlayer?.getPlaybackQuality?.() ?? 'auto';
+      renderQualityMenu();
+    }
+
+    function renderQualityMenu() {
+      const wrap = $('quality-wrap'), menu = $('quality-menu'), lbl = $('quality-label');
+      if (!availableQualities.length) { wrap.style.display = 'none'; return; }
+      wrap.style.display = 'flex';
+      lbl.textContent = QUALITY_LABEL[currentQuality] ?? currentQuality;
+      menu.innerHTML = availableQualities.map(q =>
+        `<div class="yt-quality-item${currentQuality === q ? ' active' : ''}" data-q="${q}">${QUALITY_LABEL[q] ?? q}</div>`
+      ).join('');
+      menu.querySelectorAll('.yt-quality-item').forEach(el =>
+        el.addEventListener('click', () => setQuality(el.dataset.q))
+      );
+    }
+
+    function setQuality(q) {
+      if (!ytPlayer || !playerReady) return;
+      ytPlayer.setPlaybackQuality(q);
+      currentQuality = q;
+      qualityOpen = false;
+      $('quality-menu').style.display = 'none';
+      renderQualityMenu();
+    }
+
+    function onPlayerStateChange(ev) {
+      const s = ev.data;
+      isPlaying = s === 1;
+      updatePlayBtn();
+      if (s === 1) { startProgress(); refreshQualities(); }
+      else {
+        stopProgress();
+        if (s === 0 && curIdx < CONFIG.videos.length - 1)
+          setTimeout(() => playVideo(curIdx + 1), 1200);
+      }
+    }
+
+    function updatePlayBtn() {
+      const btn = $('btn-play');
+      btn.innerHTML = isPlaying
+        ? `<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`
+        : `<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`;
+      btn.title = isPlaying ? 'Pause' : 'Play';
+    }
+
+    function updateMuteBtn() {
+      const btn = $('btn-mute');
+      if (isMuted || volume === 0) {
+        btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M16.5 12A4.5 4.5 0 0 0 14 7.97V10.18l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3 3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4 9.91 6.09 12 8.18V4z"/></svg>`;
+        btn.title = 'Unmute';
+      } else if (volume < 50) {
+        btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.5 12A4.5 4.5 0 0 0 16 7.97v8.05c1.48-.73 2.5-2.25 2.5-4.02zM5 9v6h4l5 5V4L9 9H5z"/></svg>`;
+        btn.title = 'Mute';
+      } else {
+        btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 7.97v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>`;
+        btn.title = 'Mute';
+      }
+    }
+
+    function updateFullscreenBtn() {
+      const btn = $('btn-fullscreen');
+      btn.innerHTML = isFullscreen
+        ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/></svg>`
+        : `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>`;
+      btn.title = isFullscreen ? 'Keluar Fullscreen' : 'Fullscreen';
+    }
+
+    function startProgress() {
+      stopProgress();
+      progressInterval = setInterval(() => {
+        if (ytPlayer && playerReady) {
+          currentTime = ytPlayer.getCurrentTime?.() ?? 0;
+          if (!duration || duration < 1) duration = ytPlayer.getDuration?.() ?? 0;
+          updateSeekbar();
+        }
+      }, 500);
+    }
+    function stopProgress() { if (progressInterval) { clearInterval(progressInterval); progressInterval = null; } }
+
+    function togglePlay() { if (!ytPlayer || !playerReady) return; isPlaying ? ytPlayer.pauseVideo() : ytPlayer.playVideo(); }
+    function stopVideo() { if (!ytPlayer || !playerReady) return; ytPlayer.stopVideo(); currentTime = 0; isPlaying = false; updatePlayBtn(); updateSeekbar(); }
+    function playPrev() { if (curIdx > 0) playVideo(curIdx - 1); }
+    function playNext() { if (curIdx < CONFIG.videos.length - 1) playVideo(curIdx + 1); }
+    function toggleMute() {
+      if (!ytPlayer || !playerReady) return;
+      if (isMuted) { ytPlayer.unMute(); isMuted = false; if (volume === 0) { volume = 50; ytPlayer.setVolume(50); $('vol-slider').value = 50; } }
+      else { ytPlayer.mute(); isMuted = true; }
+      updateMuteBtn();
+    }
+    function handleVolume(e) {
+      if (!ytPlayer || !playerReady) return;
+      const val = parseInt(e.target.value);
+      volume = val; ytPlayer.setVolume(val);
+      if (val === 0) { ytPlayer.mute(); isMuted = true; }
+      else if (isMuted) { ytPlayer.unMute(); isMuted = false; }
+      updateMuteBtn();
+    }
+    function seekTo(e) {
+      if (!ytPlayer || !playerReady || !duration) return;
+      const rect = e.currentTarget.getBoundingClientRect();
+      const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+      ytPlayer.seekTo(pct * duration, true);
+      currentTime = pct * duration;
+      updateSeekbar();
+    }
+    function toggleFullscreen() {
+      const box = document.querySelector('.video-player-box');
+      if (!document.fullscreenElement) box.requestFullscreen?.();
+      else document.exitFullscreen?.();
+    }
+
+    function playVideo(idx) {
+      curIdx = idx;
+      const v = CONFIG.videos[idx];
+      $('now-title').textContent = v.title;
+      $('now-desc').textContent = v.desc;
+      currentTime = 0; duration = 0; isPlaying = false;
+      updateSeekbar(); updatePlayBtn();
+      $('yt-placeholder').style.display = 'none';
+
+      if (ytPlayer && playerReady) ytPlayer.loadVideoById(v.id);
+      else if (!ytPlayer) { playerReady = false; createPlayer(v.id); }
+
+      document.querySelectorAll('.pitem').forEach((el, i) => {
+        const active = i === idx;
+        el.classList.toggle('active', active);
+        el.querySelector('.p-ov').textContent = active ? '⏸' : '▶';
+        el.querySelector('.p-num').style.color = active ? '#7C5CFC' : '#7872A0';
+        el.querySelector('.p-title-text').style.color = active ? '#C084FC' : '#E8E6FF';
+      });
+      $('btn-prev').disabled = idx <= 0;
+      $('btn-next').disabled = idx >= CONFIG.videos.length - 1;
+
+      setTimeout(() => document.querySelector('.video-player-box')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+    }
+
+    function renderPlaylist() {
+      $('playlist-count').textContent = `${CONFIG.videos.length} Video`;
+      $('playlist-container').innerHTML = CONFIG.videos.map((v, i) => `
+    <div class="pitem flex items-center gap-3 px-[18px] py-[11px] cursor-pointer transition-colors select-none hover:bg-white/[.03]"
+         style="border-bottom:1px solid rgba(255,255,255,.07);" data-idx="${i}">
+      <div class="p-num min-w-[22px] text-center text-[11px] font-semibold" style="color:#7872A0;">${String(i + 1).padStart(2, '0')}</div>
+      <div class="p-thumb">
+        <img src="https://img.youtube.com/vi/${v.id}/mqdefault.jpg" alt="" loading="lazy">
+        <div class="p-ov">▶</div>
+      </div>
+      <div class="flex-1 min-w-0">
+        <div class="p-title-text text-[13px] font-medium leading-[1.35]" style="color:#E8E6FF;">${v.title}</div>
+      </div>
+    </div>
+  `).join('');
+      // Remove border from last item
+      const items = $('playlist-container').querySelectorAll('.pitem');
+      if (items.length) items[items.length - 1].style.borderBottom = 'none';
+      items.forEach(el => el.addEventListener('click', () => playVideo(parseInt(el.dataset.idx))));
+    }
+
+    // ─── E-Book & PDF Viewer ──────────────────────────────────────────────────────
+    let currentEbookIdx = 0, ebookStarted = false;
+    let pdfDoc = null, currentPageIdx = 0, totalPages = 0, rendering = false, saveTimer = null;
+
+    function cookieKey(url) { return 'pdf_page_' + url.replace(/[^a-z0-9]/gi, '_'); }
+    function getSavedPage(url) {
+      const key = cookieKey(url);
+      const match = document.cookie.split(';').map(c => c.trim()).find(c => c.startsWith(key + '='));
+      if (!match) return 0;
+      const val = parseInt(match.split('=')[1], 10);
+      return isNaN(val) ? 0 : Math.max(0, val);
+    }
+
+    function updateEbookBanner(idx) {
+      const eb = CONFIG.ebooks[idx];
+      $('ebook-icon').textContent = eb.icon;
+      $('ebook-tag').textContent = eb.tag;
+      $('ebook-title').textContent = eb.title;
+    }
+
+    function renderEbookTabs() {
+      const tabsEl = $('ebook-tabs');
+      if (CONFIG.ebooks.length <= 1) { tabsEl.style.display = 'none'; return; }
+      tabsEl.style.display = 'flex';
+      tabsEl.innerHTML = CONFIG.ebooks.map((eb, i) => `
+    <div class="ebook-tab cursor-pointer select-none flex items-center gap-2 px-4 py-2 rounded-[30px] text-[13px] font-medium transition-all" data-idx="${i}"
+         style="${i === 0 ? ACTIVE_TAB_STYLE : INACTIVE_TAB_STYLE}">
+      ${eb.icon} ${eb.title}
+    </div>
+  `).join('');
+      tabsEl.querySelectorAll('.ebook-tab').forEach(el =>
+        el.addEventListener('click', () => switchEbook(parseInt(el.dataset.idx)))
+      );
+    }
+
+    const ACTIVE_TAB_STYLE = 'background:linear-gradient(135deg,#7C5CFC,#C084FC);color:#fff;border:1px solid transparent;box-shadow:0 4px 18px rgba(124,92,252,.35);';
+    const INACTIVE_TAB_STYLE = 'background:#16162A;color:#7872A0;border:1px solid rgba(255,255,255,.07);';
+
+    function setTabActive(container, activeIdx) {
+      container.querySelectorAll('[data-idx]').forEach((el, i) => {
+        el.style.cssText = i === activeIdx ? ACTIVE_TAB_STYLE : INACTIVE_TAB_STYLE;
+        el.className = el.className; // keep class list
+      });
+    }
+
+    function switchEbook(idx) {
+      if (idx === currentEbookIdx && ebookStarted) return;
+      currentEbookIdx = idx;
+      ebookStarted = false;
+      pdfDoc = null; currentPageIdx = 0; totalPages = 0;
+      updateEbookBanner(idx);
+      $('ebook-start-wrap').style.display = 'flex';
+      $('pdf-viewer-container').style.display = 'none';
+      $('pdf-loading').style.display = 'flex';
+      $('pdf-error').style.display = 'none';
+      $('pdf-canvas').style.display = 'none';
+      setTabActive($('ebook-tabs'), idx);
+    }
+
+    async function startReadingEbook() {
+      ebookStarted = true;
+      $('ebook-start-wrap').style.display = 'none';
+      $('pdf-viewer-container').style.display = 'block';
+      $('pdf-loading').style.display = 'flex';
+      $('pdf-error').style.display = 'none';
+      $('pdf-canvas').style.display = 'none';
+
+      const url = CONFIG.ebooks[currentEbookIdx].url;
+      try {
+        const pdfjs = await import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs');
+        pdfjs.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs';
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`Gagal memuat PDF: ${res.status} ${res.statusText}`);
+        const buffer = await res.arrayBuffer();
+        pdfDoc = await pdfjs.getDocument({ data: buffer }).promise;
+        totalPages = pdfDoc.numPages;
+        currentPageIdx = Math.min(getSavedPage(url), totalPages - 1);
+        $('pdf-loading').style.display = 'none';
+        $('pdf-canvas').style.display = 'block';
+        updatePdfUI();
+        await renderPdfPage(currentPageIdx);
+      } catch (e) {
+        $('pdf-loading').style.display = 'none';
+        $('pdf-error').style.display = 'block';
+        $('pdf-error').textContent = '⚠️ ' + (e?.message ?? 'Gagal memuat PDF');
+      }
+    }
+
+    async function renderPdfPage(idx) {
+      if (!pdfDoc || rendering) return;
+      rendering = true;
+      try {
+        const page = await pdfDoc.getPage(idx + 1);
+        const area = $('pdf-page-area');
+        const cw = area.clientWidth - 40;
+        const ch = area.clientHeight - 40;
+        const naturalVp = page.getViewport({ scale: 1 });
+        const scale = Math.min(cw / naturalVp.width, ch / naturalVp.height);
+        const vp = page.getViewport({ scale });
+        const dpr = window.devicePixelRatio || 1;
+        const canvas = $('pdf-canvas');
+        canvas.width = vp.width * dpr;
+        canvas.height = vp.height * dpr;
+        canvas.style.width = vp.width + 'px';
+        canvas.style.height = vp.height + 'px';
+        const ctx = canvas.getContext('2d');
+        ctx.scale(dpr, dpr);
+        await page.render({ canvasContext: ctx, viewport: vp }).promise;
+      } finally { rendering = false; }
+    }
+
+    function updatePdfUI() {
+      const cur = currentPageIdx + 1;
+      $('pdf-page-input').value = cur;
+      $('pdf-total').textContent = totalPages;
+      $('pdf-prev').disabled = currentPageIdx <= 0;
+      $('pdf-next').disabled = currentPageIdx >= totalPages - 1;
+      const pct = totalPages > 1 ? ((cur - 1) / (totalPages - 1)) * 100 : 100;
+      $('pdf-prog-fill').style.width = pct + '%';
+      $('pdf-footer-label').textContent = `Halaman ${cur} dari ${totalPages}`;
+    }
+
+    async function pdfPrev() { if (currentPageIdx > 0) { currentPageIdx--; updatePdfUI(); await renderPdfPage(currentPageIdx); } }
+    async function pdfNext() { if (currentPageIdx < totalPages - 1) { currentPageIdx++; updatePdfUI(); await renderPdfPage(currentPageIdx); } }
+
+    function pdfSave() {
+      const url = CONFIG.ebooks[currentEbookIdx].url;
+      const key = cookieKey(url);
+      const expires = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toUTCString();
+      document.cookie = `${key}=${currentPageIdx};expires=${expires};path=/;SameSite=Lax`;
+      const notice = $('pdf-save-notice');
+      notice.style.display = 'inline';
+      if (saveTimer) clearTimeout(saveTimer);
+      saveTimer = setTimeout(() => { notice.style.display = 'none'; }, 2200);
+    }
+
+    // ─── Tools ────────────────────────────────────────────────────────────────────
+    function renderToolsTabs() {
+      $('tools-tabs').innerHTML = CONFIG.tools.map((t, i) => `
+    <div class="tool-tab cursor-pointer select-none flex items-center gap-2 px-4 py-[9px] rounded-[30px] text-[13px] font-medium transition-all" data-idx="${i}"
+         style="${INACTIVE_TAB_STYLE}">
+      ${t.icon} ${t.name}
+    </div>
+  `).join('');
+      $('tools-tabs').querySelectorAll('.tool-tab').forEach(el =>
+        el.addEventListener('click', () => selectTool(parseInt(el.dataset.idx)))
+      );
+    }
+
+    function selectTool(idx) {
+      const t = CONFIG.tools[idx];
+      $('tools-url-bar').textContent = t.url;
+      $('tools-empty').style.display = 'none';
+      $('tools-iframe').style.display = 'block';
+      $('tools-iframe').src = t.url;
+      setTabActive($('tools-tabs'), idx);
+      setTimeout(() => $('tools-frame-box')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+    }
+
+    // ─── Reveal Animation ─────────────────────────────────────────────────────────
+    function initReveal() {
+      const obs = new IntersectionObserver(entries => {
+        entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
+      }, { threshold: 0.06 });
+      document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+    }
+
+    // ─── Content Protection ───────────────────────────────────────────────────────
+    function initProtection() {
+      document.addEventListener('contextmenu', e => e.preventDefault());
+      document.addEventListener('keydown', e => {
+        if (
+          e.key === 'F12' ||
+          (e.ctrlKey && ['s', 'u', 'p'].includes(e.key.toLowerCase())) ||
+          (e.ctrlKey && e.shiftKey && ['i', 'j', 'c'].includes(e.key.toLowerCase()))
+        ) e.preventDefault();
+      });
+      document.addEventListener('dragstart', e => e.preventDefault());
+    }
+
+    // ─── Bootstrap ────────────────────────────────────────────────────────────────
+    function init() {
+      // Apply config
+      document.title = CONFIG.siteName;
+      $('nav-site-name').textContent = CONFIG.siteName;
+      $('nav-dashboard-link').href = CONFIG.dashboardUrl;
+      $('footer-text').innerHTML = CONFIG.footerText;
+
+      // Render dynamic content
+      renderPlaylist();
+      renderEbookTabs();
+      updateEbookBanner(0);
+      renderToolsTabs();
+
+      // YouTube API
+      window.onYouTubeIframeAPIReady = () => { };
+      const tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      document.head.appendChild(tag);
+
+      // Event listeners — YouTube controls
+      $('yt-seekbar').addEventListener('click', seekTo);
+      $('btn-play').addEventListener('click', togglePlay);
+      $('btn-stop').addEventListener('click', stopVideo);
+      $('btn-prev').addEventListener('click', playPrev);
+      $('btn-next').addEventListener('click', playNext);
+      $('btn-mute').addEventListener('click', toggleMute);
+      $('btn-fullscreen').addEventListener('click', toggleFullscreen);
+      $('vol-slider').addEventListener('input', handleVolume);
+      $('btn-quality').addEventListener('click', () => {
+        qualityOpen = !qualityOpen;
+        $('quality-menu').style.display = qualityOpen ? 'block' : 'none';
+      });
+      document.addEventListener('click', e => {
+        if (!$('quality-wrap').contains(e.target)) { qualityOpen = false; $('quality-menu').style.display = 'none'; }
+      });
+      document.addEventListener('fullscreenchange', () => { isFullscreen = !!document.fullscreenElement; updateFullscreenBtn(); });
+
+      // Event listeners — PDF
+      $('btn-read-ebook').addEventListener('click', startReadingEbook);
+      $('pdf-prev').addEventListener('click', pdfPrev);
+      $('pdf-next').addEventListener('click', pdfNext);
+      $('pdf-save').addEventListener('click', pdfSave);
+      const pageInput = $('pdf-page-input');
+      pageInput.addEventListener('focus', () => pageInput.select());
+      pageInput.addEventListener('keydown', e => { if (e.key === 'Enter') e.target.blur(); });
+      pageInput.addEventListener('blur', async () => {
+        const n = parseInt(pageInput.value, 10);
+        if (!isNaN(n) && n >= 1 && n <= totalPages) { currentPageIdx = n - 1; updatePdfUI(); await renderPdfPage(currentPageIdx); }
+        else pageInput.value = currentPageIdx + 1;
+      });
+
+      initReveal();
+      initProtection();
+    }
+
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+
 </html>
