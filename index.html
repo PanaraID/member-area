@@ -582,6 +582,7 @@
   <div class="max-w-[860px] mx-auto px-4 relative z-10 pb-16">
 
     <!-- ─── Bagian VIDEO ─── -->
+    <div id="section-video">
     <div class="reveal flex items-center gap-3 mt-10 mb-4">
       <div class="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
         style="background:rgba(124,92,252,.15);">▶️</div>
@@ -705,8 +706,10 @@
       </div>
       <div id="playlist-container"></div>
     </div>
+    </div><!-- /section-video -->
 
     <!-- ─── Bagian EBOOK ─── -->
+    <div id="section-ebook">
     <div class="reveal flex items-center gap-3 mt-14 mb-4">
       <div class="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
         style="background:rgba(56,189,248,.1);">📚</div>
@@ -803,8 +806,10 @@
         </div>
       </div>
     </div>
+    </div><!-- /section-ebook -->
 
     <!-- ─── Bagian TOOLS ─── -->
+    <div id="section-tools">
     <div class="reveal flex items-center gap-3 mt-14 mb-4">
       <div class="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
         style="background:rgba(250,204,21,.1);">🛠️</div>
@@ -845,6 +850,7 @@
           style="display:none;"></iframe>
       </div>
     </div>
+    </div><!-- /section-tools -->
 
   </div><!-- /wrap -->
 
@@ -863,6 +869,11 @@
       siteName: 'Member Area',
       dashboardUrl: 'https://demo.sheetflare.net/member',
       footerText: '© 2025 Member Area · Dibuat eksklusif untuk <span style="color:#7C5CFC;">Member</span>',
+
+      // ── KONFIGURASI Tampilkan / sembunyikan bagian utama ─────────────────────────────────────────────
+      showVideos: true,   // false = sembunyikan bagian Video YouTube
+      showEbooks: true,   // false = sembunyikan bagian E-Book PDF
+      showTools: true,    // false = sembunyikan bagian Tools / Website
 
       // ── KONFIGURASI Video YouTube ──────────────────────────────────────────────────────────
       // Tambah video baru: { id: 'ID_YOUTUBE', title: 'Judul', desc: 'Deskripsi' }
@@ -1310,6 +1321,11 @@
       $('nav-site-name').textContent = CONFIG.siteName;
       $('nav-dashboard-link').href = CONFIG.dashboardUrl;
       $('footer-text').innerHTML = CONFIG.footerText;
+
+      // Tampilkan/sembunyikan bagian utama
+      if (!CONFIG.showVideos) $('section-video').style.display = 'none';
+      if (!CONFIG.showEbooks) $('section-ebook').style.display = 'none';
+      if (!CONFIG.showTools)  $('section-tools').style.display = 'none';
 
       // Render dynamic content
       renderPlaylist();
