@@ -825,19 +825,6 @@
 
     <div id="tools-frame-box" class="reveal rounded-[20px] overflow-hidden"
       style="background:#16162A;border:1px solid rgba(255,255,255,.07);box-shadow:0 20px 60px rgba(0,0,0,.5);">
-      <!-- Browser chrome bar -->
-      <div class="flex items-center gap-2.5 px-4 py-2.5"
-        style="background:#1A1A2E;border-bottom:1px solid rgba(255,255,255,.07);">
-        <div class="flex gap-1.5 items-center">
-          <div class="w-2.5 h-2.5 rounded-full bg-[#FF5F57]"></div>
-          <div class="w-2.5 h-2.5 rounded-full bg-[#FEBC2E]"></div>
-          <div class="w-2.5 h-2.5 rounded-full bg-[#28C840]"></div>
-        </div>
-        <div id="tools-url-bar"
-          class="flex-1 rounded-lg px-3 py-[5px] text-xs overflow-hidden text-ellipsis whitespace-nowrap"
-          style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07);color:#7872A0;">— Pilih tool di
-          atas —</div>
-      </div>
       <!-- Content Area -->
       <div>
         <div id="tools-empty" class="flex flex-col items-center justify-center gap-3.5 text-sm"
@@ -1285,8 +1272,7 @@
 
     function selectTool(idx) {
       const t = CONFIG.tools[idx];
-      $('tools-url-bar').textContent = t.url;
-      $('tools-empty').style.display = 'none';
+$('tools-empty').style.display = 'none';
       $('tools-iframe').style.display = 'block';
       $('tools-iframe').src = t.url;
       setTabActive($('tools-tabs'), idx);
