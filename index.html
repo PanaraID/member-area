@@ -1320,7 +1320,7 @@ $('tools-empty').style.display = 'none';
       renderToolsTabs();
 
       // YouTube API
-      window.onYouTubeIframeAPIReady = () => { };
+      window.onYouTubeIframeAPIReady = () => { if (CONFIG.videos.length) playVideo(0); };
       const tag = document.createElement('script');
       tag.src = 'https://www.youtube.com/iframe_api';
       document.head.appendChild(tag);
